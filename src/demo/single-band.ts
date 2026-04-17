@@ -11,6 +11,7 @@ import { waveWarp } from "../effects";
 import { merge } from "../compositing/merge";
 import { antiAliasMask } from "../effects/post/anti-alias-mask";
 import { collector } from "../compositing";
+import { distribute } from "../geometry";
 
 /**
  * 
@@ -28,9 +29,11 @@ export function singleBand(env: Environment): Paint {
 
   const beltAcc = collector(env);
   for (const p of middle.partitions) {
+    const plot = distribute(env, p, {density: 10, sizeRange: [0.5, 0.8]});
+    const mark = plot.extract({kind: 'random', count: 1}, env.random).marks[0]
     let b = belt(env, p, { color: "#2a5aaa", fadeExtent: 0.35 });
     // b = waveWarp(env, b, {amplitude: 10, frequency: 5, direction: 'vertical'});
-    b = twistWarp(env, b, { angle: 45, radius: 0.5 });
+    b = twistWarp(env, b, { angle: 45, radius: 1, region: mark });
     beltAcc.add(b);
   }
   let content = beltAcc.result();

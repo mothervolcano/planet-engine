@@ -1,5 +1,8 @@
 // ── Core ──
 export type { Point, PointLike, BlendMode } from "./core/types";
+export type { ColorSchema, SchemeId } from "./core/color-schema";
+export { silicate, sulfur, copper, malachite, schemes } from "./core/color-schema";
+export { toTransparent, mix, tint, shade, colorRange } from "./core/color";
 export type { SeededRandom } from "./core/prng";
 export type { Paint } from "./core/paint";
 export type { Environment, EnvironmentConfig } from "./core/environment";

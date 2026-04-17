@@ -33,7 +33,6 @@ export function belt(
   }
 
   const height = y2 - y1;
-  const fadePixels = height * fadeExtent;
 
   // Clip to sphere
   ctx.save();
@@ -41,21 +40,19 @@ export function belt(
   ctx.arc(center.x, center.y, radius, 0, Math.PI * 2);
   ctx.clip();
 
-  // Vertical gradient with fade in/out
-  const transparent = toTransparent(style.color);
-  const gradient = ctx.createLinearGradient(0, y1, 0, y2);
-  gradient.addColorStop(0, transparent);
-  if (fadePixels > 0 && height > 0) {
+  if (fadeExtent === 0 || height === 0) {
+    ctx.fillStyle = style.color;
+  } else {
+    const transparent = toTransparent(style.color);
+    const gradient = ctx.createLinearGradient(0, y1, 0, y2);
     const fadeT = Math.min(fadeExtent, 0.5);
+    gradient.addColorStop(0, transparent);
     gradient.addColorStop(fadeT, style.color);
     gradient.addColorStop(1 - fadeT, style.color);
-  } else {
-    gradient.addColorStop(0.01, style.color);
-    gradient.addColorStop(0.99, style.color);
+    gradient.addColorStop(1, transparent);
+    ctx.fillStyle = gradient;
   }
-  gradient.addColorStop(1, transparent);
 
-  ctx.fillStyle = gradient;
   ctx.fillRect(0, y1, diameter, height);
 
   ctx.restore();

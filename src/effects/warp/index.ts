@@ -7,3 +7,5 @@ export type { BulgeWarpParams } from "./bulge";
 export { bulgeWarp } from "./bulge";
 export type { RampWarpParams } from "./ramp";
 export { rampWarp } from "./ramp";
+export type { DirectionalBlurParams } from "./directional-blur";
+export { directionalBlur } from "./directional-blur";

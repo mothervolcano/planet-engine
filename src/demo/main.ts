@@ -9,12 +9,18 @@ import { gridMarks, type GridType } from "./grid-marks";
 import { partitionMarks, type PartitionType } from "./partition-marks";
 import { poissonMarks, noiseMaskedMarks, clusteredMarks } from "./scatter-modes";
 import { probabilisticFilter, type ProbabilisticBias } from "./probabilistic-filter";
+import { schemes, type SchemeId } from "../core/color-schema";
 
-const demos = [
-  { fn: sketch,       title: "Model Sketch"},
+const simpleDemos = [
   { fn: singleBand,   title: "band partitions + warp" },
   { fn: lightingOnly, title: "lighting stack only" },
-  { fn: stratoGas,    title: "gas giant (bands + storms + lighting)" },
+];
+
+const SCHEME_OPTIONS: { value: SchemeId; label: string }[] = [
+  { value: "silicate", label: "silicate" },
+  { value: "sulfur",   label: "sulfur" },
+  { value: "copper",   label: "copper" },
+  { value: "malachite",label: "malachite" },
 ];
 
 const GRID_OPTIONS: { value: GridType; label: string }[] = [
@@ -224,7 +230,7 @@ type DemoCell = { cell: HTMLElement; rerender: (seed: number) => Promise<void> }
 async function render(demoGrid: HTMLElement, seed: number, cells: DemoCell[]) {
   demoGrid.innerHTML = "";
 
-  for (const { fn, title } of demos) {
+  for (const { fn, title } of simpleDemos) {
     const { cell, imgSlot } = makeCell(title);
     const env = createEnvironment({ radius: 150, seed });
     const paint = fn(env);
@@ -251,6 +257,8 @@ async function main() {
   };
 
   const cells: DemoCell[] = [
+    buildRadioCell("model sketch", SCHEME_OPTIONS, "silicate", "sketch-scheme", (env, id) => sketch(env, schemes[id]), getSeed),
+    buildRadioCell("gas giant", SCHEME_OPTIONS, "silicate", "strato-gas-scheme", (env, id) => stratoGas(env, schemes[id]), getSeed),
     buildGridMarksCell(getSeed),
     buildRadioCell("uniform scatter", PARTITION_OPTIONS, "band", "uniform-partition", partitionMarks, getSeed),
     buildRadioCell("poisson scatter", PARTITION_OPTIONS, "band", "poisson-partition", poissonMarks, getSeed),

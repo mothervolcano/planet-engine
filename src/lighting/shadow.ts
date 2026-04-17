@@ -5,7 +5,6 @@ import type { Paint } from "../core/paint";
 import { unwrap } from "../core/paint";
 import { merge } from "../compositing/merge";
 import { radialGradientCut } from "../effects/mask/radial-gradient-cut";
-import { radialGradientMask } from "../effects";
 
 export interface ShadowParams {
   color: string;
@@ -30,8 +29,8 @@ export function shadow(
   ctx.fill();
 
   // Carve from the lit side using a radial cut
-  const maskCenter = point(center.x - radius * offset, center.y);
-  const cutCenter = point(center.x + radius * offset * 2, center.y);
+  const maskCenter = point(center.x + radius * offset, center.y);
+  const cutCenter = point(center.x - radius * offset*1.3, center.y - radius*0.6);
 
   const masked = radialGradientCut(env, dark, {
     center: maskCenter,
@@ -42,9 +41,9 @@ export function shadow(
 
   const punched = radialGradientCut(env, masked, {
     center: cutCenter,
-    innerRadius: radius * 1.5,
-    outerRadius: radius * 0.5,
-    scale: 1.3,
+    innerRadius: radius * 1.1,
+    outerRadius: radius * 0.7,
+    scale: 1.6,
   });
 
   return merge(env, paint, punched, { blendMode: "multiply" });
