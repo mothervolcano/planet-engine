@@ -32,50 +32,85 @@ export function chordGrid(
   const { count, jitter = 0 } = params;
   const { radius, center } = env;
 
-  let angleStart: number;
-  let angleEnd: number;
-
-  if (partition.kind === "band") {
-    angleStart = partition.angleStart;
-    angleEnd = partition.angleEnd;
-  } else {
-    // For disc partitions, use full sphere range
-    angleStart = -90;
-    angleEnd = 90;
-  }
-
-  const angleRange = angleEnd - angleStart;
-  const spacing = angleRange / (count + 1);
-
   const guides: Guide[] = [];
   let maxLength = 0;
 
-  // First pass: compute guides and find max length
   const rawGuides: Array<{ start: ReturnType<typeof point>; end: ReturnType<typeof point>; length: number; angle: number }> = [];
 
-  for (let i = 0; i < count; i++) {
-    let angle = angleStart + spacing * (i + 1);
+  if (partition.kind === "disc") {
+    const dc = partition.center;
+    const dr = partition.radius;
 
-    if (jitter > 0) {
-      angle += jitter * spacing * env.random.uniform(-0.5, 0.5);
-      angle = Math.max(angleStart + EPSILON, Math.min(angleEnd - EPSILON, angle));
+    const yTop = dc.y - dr;
+    const yBot = dc.y + dr;
+    const ySpacing = (yBot - yTop) / (count + 1);
+
+    for (let i = 0; i < count; i++) {
+      let y = yTop + ySpacing * (i + 1);
+
+      if (jitter > 0) {
+        y += jitter * ySpacing * env.random.uniform(-0.5, 0.5);
+        y = Math.max(yTop + EPSILON, Math.min(yBot - EPSILON, y));
+      }
+
+      // Half-chord within the disc
+      const dyDisc = y - dc.y;
+      const halfDisc = Math.sqrt(dr * dr - dyDisc * dyDisc);
+
+      // Half-chord within the planet circle
+      const dyPlanet = y - center.y;
+      const halfPlanetSq = radius * radius - dyPlanet * dyPlanet;
+      if (halfPlanetSq < EPSILON) continue;
+      const halfPlanet = Math.sqrt(halfPlanetSq);
+
+      // Intersect disc and planet circle
+      const xLeft = Math.max(dc.x - halfDisc, center.x - halfPlanet);
+      const xRight = Math.min(dc.x + halfDisc, center.x + halfPlanet);
+
+      const chordLength = xRight - xLeft;
+      if (chordLength < EPSILON) continue;
+
+      if (chordLength > maxLength) maxLength = chordLength;
+
+      const angle = Math.asin(dyPlanet / radius) / DEG_TO_RAD;
+
+      rawGuides.push({
+        start: point(xLeft, y),
+        end: point(xRight, y),
+        length: chordLength,
+        angle,
+      });
     }
+  } else {
+    const angleStart = partition.angleStart;
+    const angleEnd = partition.angleEnd;
+    const angleRange = angleEnd - angleStart;
+    const spacing = angleRange / (count + 1);
 
-    const rad = angle * DEG_TO_RAD;
-    const y = center.y + radius * Math.sin(rad);
-    const halfChord = radius * Math.cos(rad);
+    for (let i = 0; i < count; i++) {
+      let angle = angleStart + spacing * (i + 1);
 
-    if (halfChord < EPSILON) continue;
+      if (jitter > 0) {
+        angle += jitter * spacing * env.random.uniform(-0.5, 0.5);
+        angle = Math.max(angleStart + EPSILON, Math.min(angleEnd - EPSILON, angle));
+      }
 
-    const chordLength = halfChord * 2;
-    if (chordLength > maxLength) maxLength = chordLength;
+      const rad = angle * DEG_TO_RAD;
+      const y = center.y + radius * Math.sin(rad);
+      const halfChord = radius * Math.cos(rad);
 
-    rawGuides.push({
-      start: point(center.x - halfChord, y),
-      end: point(center.x + halfChord, y),
-      length: chordLength,
-      angle,
-    });
+      if (halfChord < EPSILON) continue;
+
+      const chordLength = halfChord * 2;
+      if (chordLength > maxLength) maxLength = chordLength;
+
+      rawGuides.push({
+        start: point(center.x - halfChord, y),
+        end: point(center.x + halfChord, y),
+        length: chordLength,
+        angle,
+      });
+    }
   }
 
   // Second pass: create annotated guides

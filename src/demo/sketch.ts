@@ -25,12 +25,12 @@ export function sketch(env: Environment, schema: ColorSchema): Paint {
   // ── Base layer ──
   let result = baseSphere(env, { baseColor: schema.base, shadowColor: schema.nightside });
 
-  const bandsGrid = chordGrid(env, band(-90, 90), { count: 6, jitter: 0.5 });
+  const bandsGrid = chordGrid(env, band(-60, 90), { count: 6, jitter: 0.5 });
 
-  const featPos = random.pick(bandsGrid.guides).interpolate(random.uniform(0,1))
+  const featPos = random.pick(bandsGrid.guides).interpolate(0.4)
 
   const lines1Grid = chordGrid(env, band(15, 60), { count: 5, jitter: 0.3 });
-  const lines2Grid = chordGrid(env, disc(featPos, radius * 0.3), {count: 15, jitter: 0.3})
+  const lines2Grid = chordGrid(env, disc(featPos, radius * 0.3), {count: 10, jitter: 0.3})
 
   const bands = chordPartitions(env, bandsGrid);
 
@@ -45,7 +45,7 @@ export function sketch(env: Environment, schema: ColorSchema): Paint {
   const lines1Acc = collector(env);
   for (const g of lines1Grid.guides) {
     let paint = stroke(env, g, { color: schema.highlight ?? schema.atmosphere, lineWidth: random.int(1, 5) });
-    paint = waveWarp(env, paint, {amplitude: random.uniform(0.05, 0.2), frequency: random.uniform(1, 3)})
+    paint = waveWarp(env, paint, {amplitude: random.uniform(0.05, 0.2), frequency: random.uniform(1, 3)});
     lines1Acc.add(paint);
   }
 
@@ -54,20 +54,25 @@ export function sketch(env: Environment, schema: ColorSchema): Paint {
 
   let lines = lines1Acc.result();
 //   lines1 = correctionBlur(env, lines1, { amount: 2 })
-  lines = twistWarp(env, lines, {angle: 400, radius: 2, region: stormMark})
-//   lines1 = waveWarp(env, lines1, {amplitude: 0.2, frequency: 2});
-
-content = merge(env, content, lines);
-
-//--------------------
-
-const lines2Acc = collector(env);
-for (const g of lines2Grid.guides) {
-    let paint = stroke(env, g, {color: schema.highlight ?? schema.atmosphere, lineWidth: random.int(1, 5)});
-    lines2Acc.add(paint);
-}
-
-lines = lines2Acc.result();
+  lines = twistWarp(env, lines, {angle: 400, radius: 2, region: stormMark});
+  //   lines1 = waveWarp(env, lines1, {amplitude: 0.2, frequency: 2});
+  
+  content = merge(env, content, lines);
+  
+  //--------------------
+  
+  const lines2Acc = collector(env);
+  for (const g of lines2Grid.guides) {
+      let paint = stroke(env, g, {color: schema.highlight ?? schema.atmosphere, lineWidth: random.int(1, 5)});
+      lines2Acc.add(paint);
+    }
+    
+    const stormMark2 = mark(featPos.x, featPos.y, random.uniform(0.3, 0.5));
+    
+    lines = lines2Acc.result();
+    lines = correctionBlur(env, lines, {amount: 1})
+    lines = twistWarp(env, lines, {angle: 400, radius: 2, region: stormMark2});
+    lines = waveWarp(env, lines, {amplitude: random.uniform(0.05, 0.1), frequency: random.uniform(1, 3)});
 
 content = merge(env, content, lines);
 
