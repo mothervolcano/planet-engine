@@ -4,7 +4,8 @@ import { createEnvironment } from "../core/environment";
 import { sketch } from "./sketch";
 import { singleBand } from "./single-band";
 import { lightingOnly } from "./lighting-only";
-import { stratoGas } from "./strato-gas";
+import { stormyGas } from "./stormy-gas";
+import { striatedGas } from "./striated-gas";
 import { gridMarks, type GridType } from "./grid-marks";
 import { partitionMarks, type PartitionType } from "./partition-marks";
 import { poissonMarks, noiseMaskedMarks, clusteredMarks } from "./scatter-modes";
@@ -230,6 +231,11 @@ type DemoCell = { cell: HTMLElement; rerender: (seed: number) => Promise<void> }
 async function render(demoGrid: HTMLElement, seed: number, cells: DemoCell[]) {
   demoGrid.innerHTML = "";
 
+  for (const { cell, rerender } of cells) {
+    demoGrid.appendChild(cell);
+    await rerender(seed);
+  }
+
   for (const { fn, title } of simpleDemos) {
     const { cell, imgSlot } = makeCell(title);
     const env = createEnvironment({ radius: 150, seed });
@@ -239,11 +245,6 @@ async function render(demoGrid: HTMLElement, seed: number, cells: DemoCell[]) {
     env.dispose();
     imgSlot.appendChild(img);
     demoGrid.appendChild(cell);
-  }
-
-  for (const { cell, rerender } of cells) {
-    demoGrid.appendChild(cell);
-    await rerender(seed);
   }
 }
 
@@ -257,8 +258,9 @@ async function main() {
   };
 
   const cells: DemoCell[] = [
+    buildRadioCell("striated gas", SCHEME_OPTIONS, "silicate", "striated-gas-scheme", (env, id) => striatedGas(env, schemes[id]), getSeed),
     buildRadioCell("model sketch", SCHEME_OPTIONS, "silicate", "sketch-scheme", (env, id) => sketch(env, schemes[id]), getSeed),
-    buildRadioCell("gas giant", SCHEME_OPTIONS, "silicate", "strato-gas-scheme", (env, id) => stratoGas(env, schemes[id]), getSeed),
+    buildRadioCell("gas giant", SCHEME_OPTIONS, "silicate", "stormy-gas-scheme", (env, id) => stormyGas(env, schemes[id]), getSeed),
     buildGridMarksCell(getSeed),
     buildRadioCell("uniform scatter", PARTITION_OPTIONS, "band", "uniform-partition", partitionMarks, getSeed),
     buildRadioCell("poisson scatter", PARTITION_OPTIONS, "band", "poisson-partition", poissonMarks, getSeed),

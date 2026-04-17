@@ -63,3 +63,5 @@ export type { MergeOptions } from "./compositing/merge";
 export { merge, mergeCut, mergeMask } from "./compositing/merge";
 export type { Collector, CollectorOptions } from "./compositing/collector";
 export { collector } from "./compositing/collector";
+export type { DisplaceMergeOptions } from "./compositing/displace-merge";
+export { displaceMerge } from "./compositing/displace-merge";

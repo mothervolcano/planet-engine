@@ -13,9 +13,10 @@ import { fitSphere } from "../effects/post/fit-sphere";
 import { merge } from "../compositing/merge";
 import { collector } from "../compositing/collector";
 import { correctionBlur, sphereWarp, twistWarp, waveWarp } from "../effects";
-import { stroke } from "../renderers";
+import { blot, spot, stroke } from "../renderers";
 import { colorRange, shade } from "../core/color";
 import { mark } from "../geometry/mark";
+import { displaceMerge } from "../compositing";
 
 export function sketch(env: Environment, schema: ColorSchema): Paint {
   const { random, radius } = env;
@@ -26,6 +27,7 @@ export function sketch(env: Environment, schema: ColorSchema): Paint {
   let result = baseSphere(env, { baseColor: schema.base, shadowColor: schema.nightside });
 
   const bandsGrid = chordGrid(env, band(-60, 90), { count: 6, jitter: 0.5 });
+  const lineGrid = chordGrid(env, band(-60, 90), { count: 25, jitter: 0.5 });
 
   const featPos = random.pick(bandsGrid.guides).interpolate(0.4)
 
@@ -42,6 +44,15 @@ export function sketch(env: Environment, schema: ColorSchema): Paint {
   }
   let content = beltAcc.result();
 
+  const lineTextureAcc = collector(env);
+  for (const g of lineGrid.guides) {
+    let paint = stroke(env, g, { color: 'black', lineWidth: random.int(1, 10)})
+    paint = correctionBlur(env, paint, {amount: random.uniform(0.1, 5)})
+    lineTextureAcc.add(paint)
+  }
+
+  content = merge(env, content, lineTextureAcc.result());
+
   const lines1Acc = collector(env);
   for (const g of lines1Grid.guides) {
     let paint = stroke(env, g, { color: schema.highlight ?? schema.atmosphere, lineWidth: random.int(1, 5) });
@@ -57,7 +68,7 @@ export function sketch(env: Environment, schema: ColorSchema): Paint {
   lines = twistWarp(env, lines, {angle: 400, radius: 2, region: stormMark});
   //   lines1 = waveWarp(env, lines1, {amplitude: 0.2, frequency: 2});
   
-  content = merge(env, content, lines);
+//   content = merge(env, content, lines);
   
   //--------------------
   
@@ -74,15 +85,23 @@ export function sketch(env: Environment, schema: ColorSchema): Paint {
     lines = twistWarp(env, lines, {angle: 400, radius: 2, region: stormMark2});
     lines = waveWarp(env, lines, {amplitude: random.uniform(0.05, 0.1), frequency: random.uniform(1, 3)});
 
-content = merge(env, content, lines);
+    // content = merge(env, content, lines);
+    // content = displaceMerge(env, content, lines, {strength: 50, spread:20});
+
+    let blotPos = random.pick(lineGrid.guides).interpolate(random.uniform(0.2, 0.8));
+    let blotMark = mark(blotPos.x, blotPos.y, random.uniform(0.3, 0.5));
+
+    let blot1 = blot(env, blotMark, {color: 'red'});
+    content = displaceMerge(env, content, blot1, {strength: 50, spread: 30, mode: 'push', opacity: 0} )
+
 
   // ── fitSphere on content only, then composite onto base ──
   content = sphereWarp(env, content, { strength: 0.5 });
-  content = fitSphere(env, content);
+//   content = fitSphere(env, content);
   result = merge(env, result, content);
 
   // ── Lighting ──
-  result = shadow(env, result, { color: schema.nightside });
+  result = shadow(env, result, { color: 'black' });
   result = rimLight(env, result, { color: schema.atmosphere });
   result = antiAliasMask(env, result);
 

@@ -17,7 +17,7 @@ import { mandorla } from "../renderers";
 import { correctionBlur, sphereWarp } from "../effects";
 import { colorRange, shade, tint } from "../core/color";
 
-export function stratoGas(env: Environment, schema: ColorSchema): Paint {
+export function stormyGas(env: Environment, schema: ColorSchema): Paint {
   const { random } = env;
 
   const accentColor = schema.palette.length > 0 ? random.pick(schema.palette) : shade(schema.base, 0.5);

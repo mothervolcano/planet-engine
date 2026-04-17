@@ -34,7 +34,7 @@ export function poissonMarks(env: Environment, partitionType: PartitionType): Pa
     mode: "poisson",
     minSpacing: 0.12,
     margins: [0.05, 0.95],
-    sizeRange: [0.03, 0.08],
+    sizeRange: [0.03, 0.1],
   });
 
   return render(env, base(env), plot);
