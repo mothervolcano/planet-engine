@@ -56,12 +56,27 @@ export function striatedGas(env: Environment, schema: ColorSchema): Paint {
     const cutoutLineGrid = chordGrid(env, focalBand, { count: random.int(5, 15), jitter: 0 });
     const cutoutLinesAcc = collector(env);
     for (const g of cutoutLineGrid.guides) {
-      let line = stroke(env, g, { lineWidth: random.uniform(1,3), color: 'white'});
-      line = correctionBlur(env, line, { amount: random.uniform(0.1, 5) });
+      let line = stroke(env, g, { lineWidth: random.uniform(2,4), color: 'tomato'});
+      line = correctionBlur(env, line, { amount: random.uniform(1, 5) });
       cutoutLinesAcc.add(line);
     }
     const cutoutLines = cutoutLinesAcc.result();
-    content = merge(env, content, cutoutLines);
+    content = merge(env, content, cutoutLines, {blendMode: 'cutout'});
+
+    // --------------------------------------------------
+    // Layer 3: cloud lines
+
+    const cloudLineGrid = chordGrid(env, band(random.int(-80, -10), random.int(10, 80)), { count: random.int(5, 15), jitter: 0.5 });
+    const cloudLineAcc = collector(env);
+    for (const g of cloudLineGrid.guides) {
+      let line = stroke(env, g, { lineWidth: random.uniform(1,3), color: tint(accentColor, 0.7) });
+      line = correctionBlur(env, line, { amount: random.uniform(1, 5) });
+      cloudLineAcc.add(line);
+    }
+    const cloudLines = cloudLineAcc.result();
+    content = merge(env, content, cloudLines);
+
+    // --------------------------------------------------
 
     // ── fitSphere on content only, then composite onto base ──
     content = sphereWarp(env, content, { strength: 0.70 });

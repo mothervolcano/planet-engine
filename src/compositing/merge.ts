@@ -22,7 +22,8 @@ export function merge(
   ctx.save();
 
   if (options?.blendMode) {
-    ctx.globalCompositeOperation = options.blendMode;
+    ctx.globalCompositeOperation =
+      options.blendMode === "cutout" ? "destination-out" : options.blendMode;
   }
   if (options?.opacity !== undefined) {
     ctx.globalAlpha = options.opacity;

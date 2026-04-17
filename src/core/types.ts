@@ -7,4 +7,5 @@ export type BlendMode =
   | "multiply"
   | "screen"
   | "hard-light"
-  | "overlay";
+  | "overlay"
+  | "cutout";
