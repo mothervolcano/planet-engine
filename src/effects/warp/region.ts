@@ -13,7 +13,7 @@ export function resolveRegion(
     return { cx: env.center.x, cy: env.center.y, refSize: env.radius };
   }
   if ('size' in region) {
-    return { cx: region.x, cy: region.y, refSize: region.size };
+    return { cx: region.x, cy: region.y, refSize: region.size * env.radius };
   }
   return { cx: region.center.x, cy: region.center.y, refSize: region.radius };
 }

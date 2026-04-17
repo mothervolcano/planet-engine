@@ -1,7 +1,7 @@
 import type { Environment } from "../core/environment";
 import type { Paint } from "../core/paint";
 import type { ColorSchema } from "../core/color-schema";
-import { band } from "../geometry/partition";
+import { band, disc } from "../geometry/partition";
 import { chordGrid } from "../geometry/grid";
 import { chordPartitions } from "../geometry/chord-partitions";
 import { baseSphere } from "../renderers/partition/base-sphere";
@@ -12,12 +12,13 @@ import { antiAliasMask } from "../effects/post/anti-alias-mask";
 import { fitSphere } from "../effects/post/fit-sphere";
 import { merge } from "../compositing/merge";
 import { collector } from "../compositing/collector";
-import { correctionBlur, sphereWarp } from "../effects";
+import { correctionBlur, sphereWarp, twistWarp, waveWarp } from "../effects";
 import { stroke } from "../renderers";
 import { colorRange, shade } from "../core/color";
+import { mark } from "../geometry/mark";
 
 export function sketch(env: Environment, schema: ColorSchema): Paint {
-  const { random } = env;
+  const { random, radius } = env;
 
   const palette = colorRange(schema.base, shade(schema.base, 0.5), 5);
 
@@ -26,7 +27,10 @@ export function sketch(env: Environment, schema: ColorSchema): Paint {
 
   const bandsGrid = chordGrid(env, band(-90, 90), { count: 6, jitter: 0.5 });
 
+  const featPos = random.pick(bandsGrid.guides).interpolate(random.uniform(0,1))
+
   const lines1Grid = chordGrid(env, band(15, 60), { count: 5, jitter: 0.3 });
+  const lines2Grid = chordGrid(env, disc(featPos, radius * 0.3), {count: 15, jitter: 0.3})
 
   const bands = chordPartitions(env, bandsGrid);
 
@@ -41,10 +45,31 @@ export function sketch(env: Environment, schema: ColorSchema): Paint {
   const lines1Acc = collector(env);
   for (const g of lines1Grid.guides) {
     let paint = stroke(env, g, { color: schema.highlight ?? schema.atmosphere, lineWidth: random.int(1, 5) });
+    paint = waveWarp(env, paint, {amplitude: random.uniform(0.05, 0.2), frequency: random.uniform(1, 3)})
     lines1Acc.add(paint);
   }
 
-  content = merge(env, content, lines1Acc.result());
+  const stormPos = random.pick(lines1Grid.guides).interpolate(random.uniform(0, 1));
+  const stormMark = mark(stormPos.x, stormPos.y, random.uniform(0.3, 0.5));
+
+  let lines = lines1Acc.result();
+//   lines1 = correctionBlur(env, lines1, { amount: 2 })
+  lines = twistWarp(env, lines, {angle: 400, radius: 2, region: stormMark})
+//   lines1 = waveWarp(env, lines1, {amplitude: 0.2, frequency: 2});
+
+content = merge(env, content, lines);
+
+//--------------------
+
+const lines2Acc = collector(env);
+for (const g of lines2Grid.guides) {
+    let paint = stroke(env, g, {color: schema.highlight ?? schema.atmosphere, lineWidth: random.int(1, 5)});
+    lines2Acc.add(paint);
+}
+
+lines = lines2Acc.result();
+
+content = merge(env, content, lines);
 
   // ── fitSphere on content only, then composite onto base ──
   content = sphereWarp(env, content, { strength: 0.5 });

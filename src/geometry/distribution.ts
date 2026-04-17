@@ -98,7 +98,7 @@ function distributeGrid(env: Environment, grid: Grid, params: DistributionParams
     positionJitter = 0,
     sizeRange = [0.01, 0.07],
   } = params;
-  const { random, radius } = env;
+  const { random } = env;
 
   const [marginStart, marginEnd] = margins;
   const effectiveRange = marginEnd - marginStart;
@@ -122,7 +122,7 @@ function distributeGrid(env: Environment, grid: Grid, params: DistributionParams
 
       const pos = guide.interpolate(t);
       const size =
-        random.uniform(sizeRange[0], sizeRange[1]) * guide.annotations.sizeHint * radius;
+        random.uniform(sizeRange[0], sizeRange[1]) * guide.annotations.sizeHint;
 
       marks.push(mark(pos.x, pos.y, size));
     }
@@ -149,13 +149,13 @@ function distributePartition(env: Environment, partition: Partition, params: Sca
 
 function scatterUniform(env: Environment, resolved: Partition, params: UniformScatter): Plot {
   const { density, margins = [0, 1], sizeRange = [0.01, 0.07] } = params;
-  const { random, radius } = env;
+  const { random } = env;
   const markCount = Math.max(0, Math.round(density));
   const marks: Mark[] = [];
 
   for (let i = 0; i < markCount; i++) {
     const [x, y] = samplePoint(env, resolved, margins);
-    const size = random.uniform(sizeRange[0], sizeRange[1]) * radius;
+    const size = random.uniform(sizeRange[0], sizeRange[1]);
     marks.push(mark(x, y, size));
   }
 
@@ -227,7 +227,7 @@ function scatterPoisson(env: Environment, resolved: Partition, params: PoissonSc
   }
 
   const marks: Mark[] = points.map(([x, y]) =>
-    mark(x, y, random.uniform(sizeRange[0], sizeRange[1]) * radius),
+    mark(x, y, random.uniform(sizeRange[0], sizeRange[1])),
   );
 
   return createPlot(marks);
@@ -235,7 +235,7 @@ function scatterPoisson(env: Environment, resolved: Partition, params: PoissonSc
 
 function scatterNoiseMasked(env: Environment, resolved: Partition, params: NoiseMaskedScatter): Plot {
   const { density, noiseScale, threshold, octaves = 1, margins = [0, 1], sizeRange = [0.01, 0.07] } = params;
-  const { random, radius } = env;
+  const { random } = env;
 
   const noise = makeValueNoise(random.fork());
   const markCount = Math.max(0, Math.round(density));
@@ -257,7 +257,7 @@ function scatterNoiseMasked(env: Environment, resolved: Partition, params: Noise
     n /= totalAmp;
 
     if (n > threshold) {
-      const size = random.uniform(sizeRange[0], sizeRange[1]) * radius;
+      const size = random.uniform(sizeRange[0], sizeRange[1]);
       marks.push(mark(x, y, size));
     }
   }
@@ -280,7 +280,7 @@ function scatterClustered(env: Environment, resolved: Partition, params: Cluster
 
       if (!isInside(x, y, env, resolved, margins)) continue;
 
-      const size = random.uniform(sizeRange[0], sizeRange[1]) * radius;
+      const size = random.uniform(sizeRange[0], sizeRange[1]);
       marks.push(mark(x, y, size));
     }
   }

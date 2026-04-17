@@ -13,19 +13,21 @@ export function crater(env: Environment, m: Mark, style: CraterStyle): Paint {
   const { ctx } = unwrap(paint);
   const lightAngle = style.lightAngle ?? 0;
 
+  const r = m.size * env.radius;
+
   // Draw filled circle
   ctx.fillStyle = style.color;
   ctx.beginPath();
-  ctx.arc(m.x, m.y, m.size, 0, Math.PI * 2);
+  ctx.arc(m.x, m.y, r, 0, Math.PI * 2);
   ctx.fill();
 
   // Cut out an offset circle to leave a crescent rim
-  const offsetX = Math.cos(lightAngle) * m.size * 0.4;
-  const offsetY = Math.sin(lightAngle) * m.size * 0.4;
+  const offsetX = Math.cos(lightAngle) * r * 0.4;
+  const offsetY = Math.sin(lightAngle) * r * 0.4;
 
   ctx.globalCompositeOperation = "destination-out";
   ctx.beginPath();
-  ctx.arc(m.x + offsetX, m.y + offsetY, m.size * 0.85, 0, Math.PI * 2);
+  ctx.arc(m.x + offsetX, m.y + offsetY, r * 0.85, 0, Math.PI * 2);
   ctx.fill();
   ctx.globalCompositeOperation = "source-over";
 

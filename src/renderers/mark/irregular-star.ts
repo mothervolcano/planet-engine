@@ -20,7 +20,7 @@ export function irregularStar(
 
   const points = style.points ?? 5;
   const innerRadiusRatio = style.innerRadius ?? 0.4;
-  const outerRadius = m.size;
+  const outerRadius = m.size * env.radius;
   const innerRadius = outerRadius * innerRadiusRatio;
   const totalPoints = points * 2;
   const angleStep = (Math.PI * 2) / totalPoints;

@@ -22,7 +22,7 @@ export function waveWarp(
   params: WaveWarpParams,
 ): Paint {
   const { ctx, canvas } = unwrap(paint);
-  const { amplitude, frequency, phase = 0, direction = "horizontal" } = params;
+  const { amplitude, frequency, phase = 0, direction = "vertical" } = params;
   const { cx, cy, refSize } = resolveRegion(params.region, env);
   const w = canvas.width;
   const h = canvas.height;

@@ -12,10 +12,11 @@ export function spot(env: Environment, m: Mark, style: SpotStyle): Paint {
   const paint = env.createPaint();
   const { ctx } = unwrap(paint);
 
+  const r = m.size * env.radius;
   ctx.globalAlpha = style.opacity ?? 1;
   ctx.fillStyle = style.color;
   ctx.beginPath();
-  ctx.arc(m.x, m.y, m.size, 0, Math.PI * 2);
+  ctx.arc(m.x, m.y, r, 0, Math.PI * 2);
   ctx.fill();
   ctx.globalAlpha = 1;
 

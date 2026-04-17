@@ -15,8 +15,8 @@ export function mandorla(env: Environment, m: Mark, style: MandorlaStyle): Paint
   const angle = style.angle ?? 0;
   const ratio = style.ratio ?? 0.5;
 
-  const halfLen = m.size;
-  const halfWidth = m.size * ratio;
+  const halfLen = m.size * env.radius;
+  const halfWidth = halfLen * ratio;
 
   const cos = Math.cos(angle);
   const sin = Math.sin(angle);
