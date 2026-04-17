@@ -29,7 +29,7 @@ export const sulfur: ColorSchema = {
   base: '#E4C576',
   nightside: '#B58E74',
   atmosphere: '#F2E09C',
-  palette: ['#EF767A', '#C16200', '#C8553D', '#E2E4F6'],
+  palette: ['#C16200', '#C8553D', '#E2E4F6', '#C14953', '#832161' ],
   highlight: '#ffffff',
 };
 
